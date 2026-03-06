@@ -6,7 +6,7 @@ Single-photo facial attendance demo built for showcasing integration with the Ra
 - Teacher token validation (`/api/auth/validate`)
 - Class selection by teacher school mapping
 - Single classroom photo upload
-- Simulated face-recognition attendance output (`Present`, `Absent`, `Review`)
+- Browser face detection from uploaded image (image-driven attendance output)
 - Manual correction before submission
 - Attendance submission and persistence in local JSON store
 
@@ -26,6 +26,10 @@ Open:
 - or simulate host app URL token injection:
   - `http://localhost:3000/?token=demo-token-jpr-1001`
 
+Browser requirement for processing:
+- Use latest Chrome/Edge (requires Web Face Detection API support)
+- If unsupported browser/webview, use manual face-mark mode by clicking faces on uploaded image
+
 ## Demo tokens
 - `demo-token-jpr-1001` (Jaipur school)
 - `demo-token-uda-2001` (Udaipur school)
@@ -38,4 +42,4 @@ Open:
 - `GET /api/attendance/report?classId=...&date=YYYY-MM-DD`
 
 ## Note
-Current attendance recognition is deterministic simulation for demo. In pilot/production, replace `buildRecognitionResult` in `server.js` with actual face detection + recognition inference from the Rajasthan Govt server stack.
+The app now detects faces from the uploaded image in-browser, then maps detections to attendance rows for review/submit flow. For production identity matching, integrate student enrollment photos + model-based face recognition in backend inference.

@@ -52,6 +52,19 @@
 
         <label for="photo-input">Classroom Photo (single shot)</label>
         <input id="photo-input" type="file" accept="image/*" capture="environment" />
+
+        <div id="manual-detect-wrap" class="manual-detect hidden">
+          <p class="hint">Auto face detection unavailable. Click faces in the photo to mark them manually before processing.</p>
+          <div class="manual-toolbar">
+            <button id="clear-faces-btn" type="button" class="secondary-btn">Clear Marks</button>
+            <span id="manual-count" class="hint">Marked faces: 0</span>
+          </div>
+          <div id="manual-image-wrap" class="manual-image-wrap">
+            <img id="manual-image" alt="Classroom preview for manual face marking" />
+            <div id="manual-overlay" class="manual-overlay"></div>
+          </div>
+        </div>
+
         <button id="process-btn">Process Attendance</button>
 
         <p id="process-status" class="status"></p>

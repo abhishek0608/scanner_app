@@ -1,7 +1,6 @@
 const http = require('http');
 const fs = require('fs/promises');
 const path = require('path');
-const crypto = require('crypto');
 
 const PORT = process.env.PORT || 3000;
 const HOST = process.env.HOST || '127.0.0.1';
@@ -60,12 +59,6 @@ function safePathname(inputPath) {
   return resolved;
 }
 
-function createDeterministicFloat(seed) {
-  const hash = crypto.createHash('sha256').update(seed).digest('hex');
-  const int = parseInt(hash.slice(0, 8), 16);
-  return int / 0xffffffff;
-}
-
 function getTeacherByToken(demoData, token) {
   return demoData.teachers.find((teacher) => teacher.token === token) || null;
 }
@@ -88,24 +81,61 @@ async function parseBody(req) {
   }
 }
 
-function buildRecognitionResult(students, imageFingerprint) {
-  return students.map((student) => {
-    const base = createDeterministicFloat(`${student.id}:${imageFingerprint}`);
-    const confidence = Number((0.45 + base * 0.53).toFixed(2));
+function clamp(value, min, max) {
+  return Math.min(max, Math.max(min, value));
+}
 
-    let status = 'Absent';
-    if (confidence >= 0.82) {
-      status = 'Present';
-    } else if (confidence >= 0.68) {
-      status = 'Review';
+function normalizeDetections(detections) {
+  return detections
+    .filter((face) => face && typeof face.areaRatio === 'number')
+    .map((face) => ({
+      areaRatio: clamp(face.areaRatio, 0, 1),
+      centerX: clamp(Number(face.centerX || 0.5), 0, 1),
+      centerY: clamp(Number(face.centerY || 0.5), 0, 1)
+    }))
+    .filter((face) => face.areaRatio > 0.0015)
+    .sort((a, b) => a.centerX - b.centerX);
+}
+
+function qualityFromFace(face) {
+  const edgePenalty = Math.abs(face.centerX - 0.5) * 0.35 + Math.max(0, 0.22 - face.centerY) * 0.3;
+  return clamp(0.58 + face.areaRatio * 5.5 - edgePenalty, 0.5, 0.98);
+}
+
+function buildRecognitionResult(students, detections) {
+  const normalizedFaces = normalizeDetections(detections);
+  const assignableCount = Math.min(students.length, normalizedFaces.length);
+  const assignedByStudentId = new Map();
+
+  for (let i = 0; i < assignableCount; i += 1) {
+    const student = students[i];
+    const face = normalizedFaces[i];
+    const confidence = Number(qualityFromFace(face).toFixed(2));
+    const status = confidence >= 0.74 ? 'Present' : 'Review';
+
+    assignedByStudentId.set(student.id, {
+      status,
+      confidence,
+      method: status === 'Present' ? 'DetectedFace' : 'LowQualityFace'
+    });
+  }
+
+  return students.map((student) => {
+    const assigned = assignedByStudentId.get(student.id);
+    if (assigned) {
+      return {
+        studentId: student.id,
+        name: student.name,
+        ...assigned
+      };
     }
 
     return {
       studentId: student.id,
       name: student.name,
-      status,
-      confidence,
-      method: status === 'Present' ? 'FaceMatch' : status === 'Review' ? 'ManualNeeded' : 'NoMatch'
+      status: 'Absent',
+      confidence: 0.4,
+      method: 'NoFaceDetected'
     };
   });
 }
@@ -149,6 +179,7 @@ async function handleApi(req, res, urlObj) {
     const token = body.token || '';
     const classId = body.classId || '';
     const imageBase64 = body.imageBase64 || '';
+    const detections = Array.isArray(body.detections) ? body.detections : [];
 
     const teacher = getTeacherByToken(demoData, token);
     if (!teacher) {
@@ -164,12 +195,14 @@ async function handleApi(req, res, urlObj) {
       return sendJson(res, 400, { ok: false, message: 'Image is required' });
     }
 
-    const fingerprint = crypto
-      .createHash('md5')
-      .update(`${imageBase64.length}:${imageBase64.slice(0, 80)}:${imageBase64.slice(-80)}`)
-      .digest('hex');
+    if (!detections.length) {
+      return sendJson(res, 400, {
+        ok: false,
+        message: 'No faces detected from image. Upload a clearer classroom photo.'
+      });
+    }
 
-    const attendanceRows = buildRecognitionResult(classroom.students, fingerprint);
+    const attendanceRows = buildRecognitionResult(classroom.students, detections);
     const summary = attendanceRows.reduce(
       (acc, row) => {
         if (row.status === 'Present') acc.present += 1;

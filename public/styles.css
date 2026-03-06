@@ -151,6 +151,58 @@ th {
   min-width: 120px;
 }
 
+.manual-detect {
+  margin-top: 10px;
+}
+
+.manual-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.secondary-btn {
+  width: auto;
+  margin-top: 0;
+  background: #e2e8f0;
+  color: #0f172a;
+}
+
+.manual-image-wrap {
+  position: relative;
+  width: 100%;
+  max-width: 560px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  overflow: hidden;
+  background: #f8fafc;
+}
+
+.manual-image-wrap img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.manual-overlay {
+  position: absolute;
+  inset: 0;
+  cursor: crosshair;
+}
+
+.manual-dot {
+  position: absolute;
+  width: 18px;
+  height: 18px;
+  border: 2px solid #ef4444;
+  background: rgba(239, 68, 68, 0.15);
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+
 .hidden {
   display: none;
 }

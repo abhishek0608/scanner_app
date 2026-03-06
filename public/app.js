@@ -3,7 +3,10 @@ const state = {
   teacher: null,
   classes: [],
   rows: [],
-  imageBase64: ''
+  imageBase64: '',
+  detections: [],
+  imageMeta: null,
+  manualDetections: []
 };
 
 const authCard = document.getElementById('auth-card');
@@ -21,6 +24,11 @@ const dateInput = document.getElementById('date');
 const photoInput = document.getElementById('photo-input');
 const processBtn = document.getElementById('process-btn');
 const processStatus = document.getElementById('process-status');
+const manualDetectWrap = document.getElementById('manual-detect-wrap');
+const manualImage = document.getElementById('manual-image');
+const manualOverlay = document.getElementById('manual-overlay');
+const clearFacesBtn = document.getElementById('clear-faces-btn');
+const manualCount = document.getElementById('manual-count');
 const summaryWrap = document.getElementById('summary');
 const tableWrap = document.getElementById('table-wrap');
 const attendanceBody = document.getElementById('attendance-body');
@@ -103,6 +111,73 @@ function renderRows(rows) {
   });
 }
 
+function clamp(value, min, max) {
+  return Math.min(max, Math.max(min, value));
+}
+
+function supportsFaceDetector() {
+  return 'FaceDetector' in window;
+}
+
+function setManualCountText() {
+  manualCount.textContent = `Marked faces: ${state.manualDetections.length}`;
+}
+
+function renderManualMarks() {
+  manualOverlay.innerHTML = '';
+  state.manualDetections.forEach((face) => {
+    const marker = document.createElement('span');
+    marker.className = 'manual-dot';
+    marker.style.left = `${Math.round(face.centerX * 100)}%`;
+    marker.style.top = `${Math.round(face.centerY * 100)}%`;
+    manualOverlay.appendChild(marker);
+  });
+  setManualCountText();
+}
+
+async function detectFaces(imageBase64) {
+  if (!supportsFaceDetector()) {
+    throw new Error('Automatic detection unavailable. Mark faces manually in the preview.');
+  }
+
+  const blob = await fetch(imageBase64).then((res) => res.blob());
+  const bitmap = await createImageBitmap(blob);
+  const detector = new FaceDetector({ fastMode: true, maxDetectedFaces: 100 });
+  const faces = await detector.detect(bitmap);
+
+  const detections = faces
+    .map((face) => {
+      const box = face.boundingBox || {};
+      const width = Number(box.width || 0);
+      const height = Number(box.height || 0);
+      const x = Number(box.x || 0);
+      const y = Number(box.y || 0);
+      const areaRatio = (width * height) / (bitmap.width * bitmap.height);
+      const centerX = (x + width / 2) / bitmap.width;
+      const centerY = (y + height / 2) / bitmap.height;
+
+      return {
+        xRatio: clamp(x / bitmap.width, 0, 1),
+        yRatio: clamp(y / bitmap.height, 0, 1),
+        widthRatio: clamp(width / bitmap.width, 0, 1),
+        heightRatio: clamp(height / bitmap.height, 0, 1),
+        areaRatio: clamp(areaRatio, 0, 1),
+        centerX: clamp(centerX, 0, 1),
+        centerY: clamp(centerY, 0, 1)
+      };
+    })
+    .filter((face) => face.areaRatio > 0.0015)
+    .sort((a, b) => a.centerX - b.centerX);
+
+  return {
+    detections,
+    imageMeta: {
+      width: bitmap.width,
+      height: bitmap.height
+    }
+  };
+}
+
 validateBtn.addEventListener('click', async () => {
   const token = tokenInput.value.trim();
   if (!token) {
@@ -135,14 +210,67 @@ photoInput.addEventListener('change', async (event) => {
   const file = event.target.files?.[0];
   if (!file) {
     state.imageBase64 = '';
+    state.detections = [];
+    state.imageMeta = null;
+    state.manualDetections = [];
+    manualImage.removeAttribute('src');
+    manualDetectWrap.classList.add('hidden');
+    renderManualMarks();
     return;
   }
 
   const reader = new FileReader();
   reader.onload = () => {
     state.imageBase64 = String(reader.result || '');
+    state.detections = [];
+    state.imageMeta = null;
+    state.manualDetections = [];
+    manualImage.src = state.imageBase64;
+    if (!supportsFaceDetector()) {
+      manualDetectWrap.classList.remove('hidden');
+      setStatus(processStatus, 'Auto face detection unavailable. Click each face in image preview, then process.', 'info');
+    } else {
+      manualDetectWrap.classList.add('hidden');
+    }
+    renderManualMarks();
   };
   reader.readAsDataURL(file);
+});
+
+manualImage.addEventListener('load', () => {
+  state.imageMeta = {
+    width: manualImage.naturalWidth,
+    height: manualImage.naturalHeight
+  };
+});
+
+manualOverlay.addEventListener('click', (event) => {
+  if (!state.imageBase64) {
+    return;
+  }
+
+  const rect = manualOverlay.getBoundingClientRect();
+  const centerX = clamp((event.clientX - rect.left) / rect.width, 0, 1);
+  const centerY = clamp((event.clientY - rect.top) / rect.height, 0, 1);
+  const widthRatio = 0.1;
+  const heightRatio = 0.16;
+
+  state.manualDetections.push({
+    xRatio: clamp(centerX - widthRatio / 2, 0, 1),
+    yRatio: clamp(centerY - heightRatio / 2, 0, 1),
+    widthRatio,
+    heightRatio,
+    areaRatio: widthRatio * heightRatio,
+    centerX,
+    centerY
+  });
+
+  renderManualMarks();
+});
+
+clearFacesBtn.addEventListener('click', () => {
+  state.manualDetections = [];
+  renderManualMarks();
 });
 
 processBtn.addEventListener('click', async () => {
@@ -155,12 +283,49 @@ processBtn.addEventListener('click', async () => {
     return;
   }
 
-  setStatus(processStatus, 'Processing attendance...');
+  let detectionSource = 'auto';
+  setStatus(processStatus, 'Preparing face detections...');
+
+  if (supportsFaceDetector()) {
+    try {
+      const detectionResult = await detectFaces(state.imageBase64);
+      state.detections = detectionResult.detections;
+      state.imageMeta = detectionResult.imageMeta;
+    } catch (error) {
+      if (state.manualDetections.length) {
+        state.detections = [...state.manualDetections];
+        detectionSource = 'manual';
+      } else {
+        setStatus(processStatus, error.message || 'Face detection failed', 'error');
+        return;
+      }
+    }
+  } else {
+    if (!state.manualDetections.length) {
+      manualDetectWrap.classList.remove('hidden');
+      setStatus(processStatus, 'Mark faces manually in the image preview before processing.', 'error');
+      return;
+    }
+    state.detections = [...state.manualDetections];
+    detectionSource = 'manual';
+  }
+
+  if (!state.detections.length) {
+    setStatus(processStatus, 'No faces detected in the photo. Try a clearer image or mark faces manually.', 'error');
+    return;
+  }
+
+  setStatus(
+    processStatus,
+    `Using ${detectionSource} detections (${state.detections.length} face(s)). Processing attendance...`
+  );
 
   const result = await api('/api/attendance/process', {
     token: state.token,
     classId: classSelect.value,
-    imageBase64: state.imageBase64
+    imageBase64: state.imageBase64,
+    detections: state.detections,
+    imageMeta: state.imageMeta
   });
 
   if (!result.ok) {
