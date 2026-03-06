@@ -1,0 +1,23 @@
+{
+  "records": [
+    {
+      "snapshotId": "ATT-1772780210415",
+      "classId": "CLS-JPR-6A",
+      "className": "Class 6A",
+      "schoolId": "SCH-JPR-001",
+      "teacherId": "T-1001",
+      "teacherName": "Suman Sharma",
+      "date": "2026-03-06",
+      "period": "P1",
+      "submittedAt": "2026-03-06T06:56:50.415Z",
+      "rows": [
+        {
+          "studentId": "S-6001",
+          "name": "Anita",
+          "status": "Present",
+          "confidence": 0.9
+        }
+      ]
+    }
+  ]
+}

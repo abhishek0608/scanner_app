@@ -1,0 +1,10 @@
+{
+  "name": "rajasthan-attendance-demo",
+  "version": "1.0.0",
+  "description": "Single-photo attendance demo for Rajasthan government schools",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "license": "UNLICENSED"
+}

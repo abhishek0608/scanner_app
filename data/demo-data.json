@@ -1,0 +1,81 @@
+{
+  "teachers": [
+    {
+      "id": "T-1001",
+      "name": "Suman Sharma",
+      "schoolId": "SCH-JPR-001",
+      "token": "demo-token-jpr-1001"
+    },
+    {
+      "id": "T-2001",
+      "name": "Rakesh Meena",
+      "schoolId": "SCH-UDA-001",
+      "token": "demo-token-uda-2001"
+    }
+  ],
+  "schools": [
+    {
+      "id": "SCH-JPR-001",
+      "name": "Govt Sr Sec School, Jaipur",
+      "district": "Jaipur"
+    },
+    {
+      "id": "SCH-UDA-001",
+      "name": "Govt Upper Primary School, Udaipur",
+      "district": "Udaipur"
+    }
+  ],
+  "classes": [
+    {
+      "id": "CLS-JPR-6A",
+      "schoolId": "SCH-JPR-001",
+      "name": "Class 6A",
+      "students": [
+        { "id": "S-6001", "name": "Anita" },
+        { "id": "S-6002", "name": "Bhavesh" },
+        { "id": "S-6003", "name": "Chetna" },
+        { "id": "S-6004", "name": "Deepak" },
+        { "id": "S-6005", "name": "Ekta" },
+        { "id": "S-6006", "name": "Farhan" },
+        { "id": "S-6007", "name": "Gita" },
+        { "id": "S-6008", "name": "Harish" },
+        { "id": "S-6009", "name": "Iqra" },
+        { "id": "S-6010", "name": "Jatin" }
+      ]
+    },
+    {
+      "id": "CLS-JPR-7B",
+      "schoolId": "SCH-JPR-001",
+      "name": "Class 7B",
+      "students": [
+        { "id": "S-7001", "name": "Kajal" },
+        { "id": "S-7002", "name": "Lokesh" },
+        { "id": "S-7003", "name": "Manoj" },
+        { "id": "S-7004", "name": "Neha" },
+        { "id": "S-7005", "name": "Om" },
+        { "id": "S-7006", "name": "Pooja" },
+        { "id": "S-7007", "name": "Qadir" },
+        { "id": "S-7008", "name": "Riya" },
+        { "id": "S-7009", "name": "Sohan" },
+        { "id": "S-7010", "name": "Tanvi" }
+      ]
+    },
+    {
+      "id": "CLS-UDA-5A",
+      "schoolId": "SCH-UDA-001",
+      "name": "Class 5A",
+      "students": [
+        { "id": "S-5001", "name": "Umesh" },
+        { "id": "S-5002", "name": "Vani" },
+        { "id": "S-5003", "name": "Wasim" },
+        { "id": "S-5004", "name": "Xavier" },
+        { "id": "S-5005", "name": "Yash" },
+        { "id": "S-5006", "name": "Zoya" },
+        { "id": "S-5007", "name": "Aarav" },
+        { "id": "S-5008", "name": "Bhumika" },
+        { "id": "S-5009", "name": "Charu" },
+        { "id": "S-5010", "name": "Dev" }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,166 @@
+:root {
+  --bg: #f4f7fb;
+  --surface: #ffffff;
+  --text: #1f2937;
+  --muted: #64748b;
+  --border: #dbe3ef;
+  --primary: #0c4a6e;
+  --primary-2: #0369a1;
+  --ok: #166534;
+  --warn: #92400e;
+  --bad: #9f1239;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: "Segoe UI", Tahoma, sans-serif;
+  background: radial-gradient(circle at top right, #dff2ff, var(--bg) 30%);
+  color: var(--text);
+}
+
+.container {
+  max-width: 980px;
+  margin: 0 auto;
+  padding: 24px;
+}
+
+h1,
+h2,
+h3,
+p {
+  margin-top: 0;
+}
+
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 18px;
+  margin-bottom: 16px;
+  box-shadow: 0 4px 20px rgba(15, 23, 42, 0.06);
+}
+
+.meta {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 12px;
+}
+
+label {
+  display: block;
+  font-size: 0.9rem;
+  margin-bottom: 6px;
+  color: var(--muted);
+}
+
+input,
+select,
+button {
+  width: 100%;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  padding: 10px;
+  font-size: 0.95rem;
+}
+
+button {
+  background: linear-gradient(90deg, var(--primary), var(--primary-2));
+  color: #fff;
+  border: none;
+  margin-top: 10px;
+  cursor: pointer;
+}
+
+button:hover {
+  opacity: 0.95;
+}
+
+.status {
+  min-height: 20px;
+  margin-top: 8px;
+  font-size: 0.92rem;
+}
+
+.hint {
+  color: var(--muted);
+  font-size: 0.88rem;
+}
+
+.summary {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: 14px 0;
+}
+
+.pill {
+  border-radius: 999px;
+  padding: 8px 12px;
+  font-weight: 600;
+}
+
+.pill.total {
+  background: #e2e8f0;
+}
+
+.pill.present {
+  background: #dcfce7;
+  color: var(--ok);
+}
+
+.pill.absent {
+  background: #ffe4e6;
+  color: var(--bad);
+}
+
+.pill.review {
+  background: #fef3c7;
+  color: var(--warn);
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 8px;
+}
+
+th,
+td {
+  border: 1px solid var(--border);
+  text-align: left;
+  padding: 8px;
+  font-size: 0.9rem;
+}
+
+th {
+  background: #f8fafc;
+}
+
+.status-select {
+  min-width: 120px;
+}
+
+.hidden {
+  display: none;
+}
+
+@media (max-width: 640px) {
+  .container {
+    padding: 14px;
+  }
+
+  .card {
+    padding: 14px;
+  }
+}

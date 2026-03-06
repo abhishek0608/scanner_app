@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Rajasthan Attendance Demo</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <main class="container">
+      <header>
+        <h1>Rajasthan School Attendance (Demo)</h1>
+        <p>Single photo attendance for classroom sessions</p>
+      </header>
+
+      <section class="card" id="auth-card">
+        <h2>1. Teacher Access</h2>
+        <p class="hint">Use demo token: <code>demo-token-jpr-1001</code> or <code>demo-token-uda-2001</code></p>
+        <label for="token">Session Token</label>
+        <input id="token" type="text" placeholder="Paste token from host app" />
+        <button id="validate-btn">Validate Token</button>
+        <p id="auth-status" class="status"></p>
+      </section>
+
+      <section class="card hidden" id="attendance-card">
+        <h2>2. Mark Attendance</h2>
+        <div class="meta">
+          <div><strong>Teacher:</strong> <span id="teacher-name"></span></div>
+          <div><strong>School:</strong> <span id="school-name"></span></div>
+          <div><strong>District:</strong> <span id="district-name"></span></div>
+        </div>
+
+        <div class="row">
+          <div>
+            <label for="class-select">Class</label>
+            <select id="class-select"></select>
+          </div>
+          <div>
+            <label for="period">Period</label>
+            <select id="period">
+              <option value="P1">P1</option>
+              <option value="P2">P2</option>
+              <option value="P3">P3</option>
+              <option value="P4">P4</option>
+            </select>
+          </div>
+          <div>
+            <label for="date">Date</label>
+            <input id="date" type="date" />
+          </div>
+        </div>
+
+        <label for="photo-input">Classroom Photo (single shot)</label>
+        <input id="photo-input" type="file" accept="image/*" capture="environment" />
+        <button id="process-btn">Process Attendance</button>
+
+        <p id="process-status" class="status"></p>
+
+        <div id="summary" class="summary hidden"></div>
+
+        <div id="table-wrap" class="hidden">
+          <h3>3. Review & Submit</h3>
+          <table>
+            <thead>
+              <tr>
+                <th>Student ID</th>
+                <th>Name</th>
+                <th>Confidence</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody id="attendance-body"></tbody>
+          </table>
+          <button id="submit-btn">Submit Final Attendance</button>
+          <p id="submit-status" class="status"></p>
+        </div>
+      </section>
+    </main>
+
+    <script src="/app.js"></script>
+  </body>
+</html>
